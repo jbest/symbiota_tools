@@ -19,7 +19,20 @@ the download form and the form handler which is used by this script.
 
 """
 import requests
+import urllib.parse
 
+# Query parameters
+# db=370 specifies the BRIT dataset, this can be changed to specify other datasets
+db_list = [370, 264]
+db = ','.join([str(db_id) for db_id in db_list])
+state = 'Texas'
+county = 'Tarrant'
+hasimages = 1
+search_params = {'db': db, 'state': state, 'county': county, 'hasimages': hasimages}
+searchvar = urllib.parse.urlencode(search_params)
+#searchvar = 'db=370&state=Texas&county=Tarrant&hasimages=1'
+
+# Download format parameters
 url = 'https://portal.torcherbaria.org/portal/collections/download/downloadhandler.php'
 schema = 'dwc' # Darwin Core
 file_format = 'csv' #form field name is 'format'
@@ -31,8 +44,7 @@ images = '1' # include images - 1, only includes image records
 zip_file = '0' # form field name is zip, default to not zip file
 if images == '1': # results must be zipped to get both specimen and image records
   zip_file = '1' # form field name is zip
-# db=370 specifies the BRIT dataset, this can be changed to specify other datasets
-searchvar = 'db=370&state=Texas&county=Tarrant&hasimages=1'
+
 
 r = requests.post(url, data={'schema': schema, 'format': file_format, 
     'cset': cset, 'publicsearch': publicsearch, 
@@ -56,4 +68,6 @@ if zip_file =='1':
     for chunk in r.iter_content(chunk_size=128):
       zip_file.write(chunk)
   print(f'File {filename} saved.')
+
+
   
