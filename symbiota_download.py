@@ -23,35 +23,59 @@ import urllib.parse
 
 # Query parameters
 # db=370 specifies the BRIT dataset, this can be changed to specify other datasets
-db_list = [370, 264]
+rsa_bryo = '68'
+rsa_vasc = '17'
+rsa_wood = '105'
+
+db_list = [rsa_bryo, rsa_vasc, rsa_wood]
+#db_list = [370]
 db = ','.join([str(db_id) for db_id in db_list])
-state = 'Texas'
-county = 'Tarrant'
-hasimages = 1
-search_params = {'db': db, 'state': state, 'county': county, 'hasimages': hasimages}
-searchvar = urllib.parse.urlencode(search_params)
+#state = 'Texas'
+state = ''
+#county = 'Scurry'
+county = ''
+hasimages = '0'
+includecult = '1' # include cultivated
+collector = 'Carlquist'
+#search_params = {'db': db, 'state': state, 'county': county, 'hasimages': hasimages}
+search_params = {'db': db, 'hasimages': hasimages, 'includecult': includecult, 'collector': collector}
+
+#searchvar = urllib.parse.urlencode(search_params)
+#searchvar = 'db=68,17,105&collector=Carlquist&includecult=1'
+#print(db)
+#print(searchvar)
 #searchvar = 'db=370&state=Texas&county=Tarrant&hasimages=1'
 
 # Download format parameters
-url = 'https://portal.torcherbaria.org/portal/collections/download/downloadhandler.php'
+#url = 'https://portal.torcherbaria.org/portal/collections/download/downloadhandler.php'
+url = 'https://www.cch2.org/portal/collections/download/downloadhandler.php'
 schema = 'dwc' # Darwin Core
 file_format = 'csv' #form field name is 'format'
 cset = 'utf-8'
+#publicsearch = '1'
 publicsearch = '1'
 taxonFilterCode = '0'
 sourcepage = 'specimen'
-images = '1' # include images - 1, only includes image records
+images = '0' # include images - 1, only includes image records
 zip_file = '0' # form field name is zip, default to not zip file
 if images == '1': # results must be zipped to get both specimen and image records
   zip_file = '1' # form field name is zip
 
-
-r = requests.post(url, data={'schema': schema, 'format': file_format, 
+# download params
+download_params={'schema': schema, 'format': file_format, 
     'cset': cset, 'publicsearch': publicsearch, 
     'taxonFilterCode': taxonFilterCode, 
     'images': images, 'zip':zip_file,
-    'sourcepage': sourcepage, 'searchvar': searchvar},
+    'sourcepage': sourcepage}
+
+# combine parameters
+data = search_params | download_params
+
+r = requests.post(url, 
+    data=data,
     stream=True)
+
+print(r.url)
 
 # Save data
 if zip_file == '0':
